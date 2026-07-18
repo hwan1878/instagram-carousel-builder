@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="고급스러운 디자인과 부드러운 모션이 적용된 반응형 자동 이미지 캐러셀 데모입니다.">
+  <title>프리미엄 이미지 캐러셀</title>
+  <!-- Google Fonts & Pretendard 폰트 불러오기 -->
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <!-- Vanilla CSS 연결 -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <section class="carousel-section" aria-label="이미지 갤러리 슬라이드">
+      <!-- 캐러셀 컨테이너 -->
+      <div class="carousel-container" id="mainCarousel">
+        <!-- 슬라이더 트랙 -->
+        <div class="carousel-track">
+          <!-- 슬라이드 1 -->
+          <article class="carousel-slide active" aria-roledescription="slide" aria-label="1/3 슬라이드">
+            <img src="images/slide1.jpg" alt="네온 불빛이 가득한 미래형 사이버펑크 도시 야경">
+            <div class="slide-content">
+              <span class="slide-badge">Future City</span>
+              <h2 class="slide-title">사이버펑크 메트로폴리스</h2>
+              <p class="slide-desc">화려한 네온사인과 공중을 가르는 차량들이 빚어내는 미래 도시의 압도적인 야경을 감상해보세요.</p>
+            </div>
+          </article>
+          <!-- 슬라이드 2 -->
+          <article class="carousel-slide" aria-roledescription="slide" aria-label="2/3 슬라이드">
+            <img src="images/slide2.jpg" alt="일출 속 안개 낀 고요한 산정 호수와 나룻배">
+            <div class="slide-content">
+              <span class="slide-badge">Serene Nature</span>
+              <h2 class="slide-title">안개 낀 아침 호수</h2>
+              <p class="slide-desc">황금빛 일출과 물안개가 가득한 호숫가에서 자연의 깊은 평화와 고요함을 느껴보세요.</p>
+            </div>
+          </article>
+          <!-- 슬라이드 3 -->
+          <article class="carousel-slide" aria-roledescription="slide" aria-label="3/3 슬라이드">
+            <img src="images/slide3.jpg" alt="홀로그램 모니터와 세련된 보라색 무드등의 미래형 작업실">
+            <div class="slide-content">
+              <span class="slide-badge">Workspace</span>
+              <h2 class="slide-title">미래형 워크스페이스</h2>
+              <p class="slide-desc">생산성을 극대화하는 홀로그램 디스플레이와 차분한 조명이 조화를 이루는 아늑한 공간입니다.</p>
+            </div>
+          </article>
+        </div>
+
+        <!-- 네비게이션 화살표 버튼 -->
+        <button class="nav-btn prev-btn" id="prevBtn" aria-label="이전 슬라이드">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+        <button class="nav-btn next-btn" id="nextBtn" aria-label="다음 슬라이드">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+
+        <!-- 하단 페이지네이션 인디케이터 -->
+        <div class="carousel-indicators" id="indicators">
+          <!-- 스크립트를 통해 동적으로 제어 및 초기 구조 설정 -->
+          <button class="indicator active" data-slide="0" aria-label="1번째 슬라이드로 이동"></button>
+          <button class="indicator" data-slide="1" aria-label="2번째 슬라이드로 이동"></button>
+          <button class="indicator" data-slide="2" aria-label="3번째 슬라이드로 이동"></button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 자바스크립트 연결 -->
+  <script src="script.js"></script>
+</body>
+</html>

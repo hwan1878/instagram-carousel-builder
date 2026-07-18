@@ -1,0 +1,807 @@
+/* 글로벌 다크 스타일 정의 */
+:root {
+  --bg-app: #0e0e12;
+  --bg-panel: #181822;
+  --bg-card: #20202e;
+  --border-color: rgba(255, 255, 255, 0.08);
+  --text-main: #ffffff;
+  --text-muted: #a0a0b0;
+  --accent: #00ffcc; /* 네온 민트 */
+  --accent-hover: #00e5bb;
+  --danger: #ff4d6d;
+  --panel-width: 420px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bg-app);
+  color: var(--text-main);
+  font-family: 'Pretendard', 'Inter', sans-serif;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* 전체 앱 레이아웃 */
+.app-layout {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+}
+
+/* 1. 에디터 패널 (좌측) */
+.editor-panel {
+  width: var(--panel-width);
+  height: 100%;
+  background-color: var(--bg-panel);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  z-index: 10;
+  box-shadow: 10px 0 30px rgba(0, 0, 0, 0.3);
+}
+
+.editor-header {
+  padding: 24px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.editor-header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, #fff 0%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.editor-header p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* 에디터 내부 스크롤 영역 */
+.editor-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* 에디터 세션별 공통 스타일 */
+.editor-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.editor-section h2 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--accent);
+  border-left: 3px solid var(--accent);
+  padding-left: 10px;
+}
+
+/* 폼 요소 스타일 */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.form-group input[type="text"],
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: #fff;
+  padding: 12px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-group input[type="text"]:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 8px rgba(0, 255, 204, 0.15);
+}
+
+.form-group textarea {
+  resize: vertical;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* 슬라이드 네비게이션 제어기 */
+.slide-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--bg-card);
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+#slideIndicator {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.slide-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+/* 공통 컨트롤 버튼 */
+.control-btn {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: #fff;
+  border-radius: 8px;
+  padding: 12px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.control-btn:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.mini-btn {
+  padding: 6px 12px;
+  font-size: 0.8rem;
+}
+
+.action-btn {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.action-btn:hover {
+  background-color: rgba(0, 255, 204, 0.08);
+}
+
+.delete-btn {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.delete-btn:hover {
+  background-color: rgba(255, 77, 109, 0.08);
+}
+
+/* 테마 선택 그리드 */
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.theme-btn {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.theme-btn:hover {
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.theme-btn.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background-color: rgba(0, 255, 204, 0.05);
+}
+
+/* 미디어 드롭존 파일 선택기 */
+.file-dropzone {
+  border: 2px dashed rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background-color: rgba(255, 255, 255, 0.01);
+}
+
+.file-dropzone p {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.file-dropzone:hover {
+  border-color: var(--accent);
+  background-color: rgba(0, 255, 204, 0.02);
+}
+
+.file-dropzone.dragover {
+  border-color: var(--accent);
+  background-color: rgba(0, 255, 204, 0.06);
+}
+
+/* 이미지 위치/비율 수동 조절 영역 */
+.image-adjustments {
+  background-color: rgba(255, 255, 255, 0.02);
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.slider-group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.slider-group label {
+  font-size: 0.75rem;
+  width: 60px;
+  flex-shrink: 0;
+}
+
+.slider-group input[type="range"] {
+  flex: 1;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+/* 에디터 하단 버튼 고정 패널 */
+.editor-footer {
+  padding: 20px 24px;
+  border-top: 1px solid var(--border-color);
+  background-color: var(--bg-panel);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.download-btn {
+  background-color: var(--accent);
+  color: #000;
+  border: none;
+}
+
+.download-btn:hover {
+  background-color: var(--accent-hover);
+  box-shadow: 0 4px 15px rgba(0, 255, 204, 0.3);
+}
+
+.download-all-btn {
+  background-color: transparent;
+  border: 1px solid var(--border-color);
+  color: #fff;
+}
+
+.download-all-btn:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+
+/* 2. 프리뷰 패널 (우측) */
+.preview-panel {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-app);
+  position: relative;
+  overflow: auto;
+}
+
+/* 프리뷰 축소 래퍼 (실제 1080x1350 카드를 화면 크기에 맞춰 scale 다운) */
+.preview-scale-wrapper {
+  transform: scale(0.48); /* 화면 규격에 맞춰 비율 축소 */
+  transform-origin: center center;
+  width: 1080px;
+  height: 1350px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 인스타그램 내보내기용 원본 카드 (1080x1350) */
+.carousel-card-export {
+  position: relative;
+  width: 1080px;
+  height: 1350px;
+  background-color: #121212;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 100px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+  z-index: 1;
+}
+
+/* 업로드 배경 이미지 처리 */
+.card-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  z-index: -1;
+  transition: transform 0.1s ease;
+}
+
+/* 상단 메타 영역 */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  z-index: 5;
+}
+
+.card-id {
+  font-size: 1.5rem;
+  font-weight: 600;
+  opacity: 0.75;
+}
+
+.card-page {
+  font-size: 1.5rem;
+  font-weight: 600;
+  opacity: 0.75;
+}
+
+/* 중앙 콘텐츠 컨테이너 */
+.card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  z-index: 5;
+  margin: 60px 0;
+}
+
+/* 1. 표지 (Intro) */
+.slide-type-intro {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 36px;
+}
+
+.card-badge {
+  display: inline-block;
+  padding: 8px 20px;
+  border-radius: 40px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.card-title-intro {
+  font-size: 4rem;
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -1px;
+  word-break: keep-all;
+}
+
+.card-subtitle {
+  font-size: 1.8rem;
+  font-weight: 500;
+  line-height: 1.5;
+  word-break: keep-all;
+}
+
+/* 2. 본문 (Body) */
+.slide-type-body {
+  display: flex;
+  flex-direction: column;
+  gap: 60px;
+}
+
+.card-title-body {
+  font-size: 3rem;
+  font-weight: 800;
+  line-height: 1.2;
+  word-break: keep-all;
+}
+
+.card-content-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.card-content-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.card-content-list li .bullet {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  margin-top: 14px;
+  flex-shrink: 0;
+}
+
+.card-content-list li .point-text {
+  font-size: 2.1rem;
+  line-height: 1.55;
+  font-weight: 500;
+  word-break: keep-all;
+}
+
+/* 3. 결론 (Outro) */
+.slide-type-outro {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 36px;
+}
+
+.card-title-outro {
+  font-size: 4rem;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.card-subtitle-outro {
+  font-size: 2.2rem;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.card-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 50px;
+  border-radius: 12px;
+  font-size: 1.7rem;
+  font-weight: 700;
+  margin-top: 40px;
+  border-width: 3px;
+  border-style: solid;
+}
+
+/* 하단 프로그레스 바 */
+.card-footer {
+  width: 100%;
+  z-index: 5;
+}
+
+.card-progress-bar {
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.card-progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+/* 브랜드 로고 레이어 */
+.card-logo-layer {
+  position: absolute;
+  bottom: 120px;
+  right: 100px;
+  z-index: 10;
+}
+
+.card-logo-layer img {
+  max-width: 150px;
+  max-height: 80px;
+  object-fit: contain;
+  transition: all 0.2s ease;
+}
+
+
+/* ==========================================================================
+   디자인 테마별 상세 색상 매칭 (인스타그램 카드뉴스 원본 적용)
+   ========================================================================== */
+
+/* 1. DARK THEME */
+.carousel-card-export[data-theme="dark"] {
+  background-color: #121212;
+}
+.carousel-card-export[data-theme="dark"] .card-id,
+.carousel-card-export[data-theme="dark"] .card-page {
+  color: #888888;
+}
+.carousel-card-export[data-theme="dark"] .card-title-intro,
+.carousel-card-export[data-theme="dark"] .card-title-body,
+.carousel-card-export[data-theme="dark"] .card-title-outro,
+.carousel-card-export[data-theme="dark"] .point-text,
+.carousel-card-export[data-theme="dark"] .card-subtitle-outro {
+  color: #ffffff;
+}
+.carousel-card-export[data-theme="dark"] .card-badge {
+  background-color: #00E5FF;
+  color: #121212;
+}
+.carousel-card-export[data-theme="dark"] .card-subtitle {
+  color: #00E5FF;
+}
+.carousel-card-export[data-theme="dark"] .bullet {
+  background-color: #00E5FF;
+}
+.carousel-card-export[data-theme="dark"] .card-cta-btn {
+  border-color: #00E5FF;
+  color: #ffffff;
+}
+.carousel-card-export[data-theme="dark"] .card-progress-bar {
+  background-color: #333333;
+}
+.carousel-card-export[data-theme="dark"] .card-progress-fill {
+  background-color: #00E5FF;
+}
+
+/* 2. LIGHT THEME */
+.carousel-card-export[data-theme="light"] {
+  background-color: #F8F9FA;
+}
+.carousel-card-export[data-theme="light"] .card-id,
+.carousel-card-export[data-theme="light"] .card-page {
+  color: #757575;
+}
+.carousel-card-export[data-theme="light"] .card-title-intro,
+.carousel-card-export[data-theme="light"] .card-title-body,
+.carousel-card-export[data-theme="light"] .card-title-outro,
+.carousel-card-export[data-theme="light"] .point-text,
+.carousel-card-export[data-theme="light"] .card-subtitle-outro {
+  color: #1A1A1A;
+}
+.carousel-card-export[data-theme="light"] .card-badge {
+  background-color: #6C5CE7;
+  color: #ffffff;
+}
+.carousel-card-export[data-theme="light"] .card-subtitle {
+  color: #6C5CE7;
+}
+.carousel-card-export[data-theme="light"] .bullet {
+  background-color: #6C5CE7;
+}
+.carousel-card-export[data-theme="light"] .card-cta-btn {
+  border-color: #6C5CE7;
+  color: #1A1A1A;
+}
+.carousel-card-export[data-theme="light"] .card-progress-bar {
+  background-color: #E0E0E0;
+}
+.carousel-card-export[data-theme="light"] .card-progress-fill {
+  background-color: #6C5CE7;
+}
+
+/* 3. CYBERPUNK THEME */
+.carousel-card-export[data-theme="cyberpunk"] {
+  background-color: #0F0C1B;
+}
+.carousel-card-export[data-theme="cyberpunk"] .card-id,
+.carousel-card-export[data-theme="cyberpunk"] .card-page {
+  color: #6F6C85;
+}
+.carousel-card-export[data-theme="cyberpunk"] .card-title-intro,
+.carousel-card-export[data-theme="cyberpunk"] .card-title-body,
+.carousel-card-export[data-theme="cyberpunk"] .card-title-outro,
+.carousel-card-export[data-theme="cyberpunk"] .point-text,
+.carousel-card-export[data-theme="cyberpunk"] .card-subtitle-outro {
+  color: #00FFCC;
+}
+.carousel-card-export[data-theme="cyberpunk"] .card-badge {
+  background-color: #FF007F;
+  color: #0F0C1B;
+}
+.carousel-card-export[data-theme="cyberpunk"] .card-subtitle {
+  color: #FF007F;
+}
+.carousel-card-export[data-theme="cyberpunk"] .bullet {
+  background-color: #FF007F;
+}
+.carousel-card-export[data-theme="cyberpunk"] .card-cta-btn {
+  border-color: #FF007F;
+  color: #00FFCC;
+}
+.carousel-card-export[data-theme="cyberpunk"] .card-progress-bar {
+  background-color: #252131;
+}
+.carousel-card-export[data-theme="cyberpunk"] .card-progress-fill {
+  background-color: #FF007F;
+}
+
+/* 4. WARM THEME */
+.carousel-card-export[data-theme="warm"] {
+  background-color: #FAF5EF;
+}
+.carousel-card-export[data-theme="warm"] .card-id,
+.carousel-card-export[data-theme="warm"] .card-page {
+  color: #8A817C;
+}
+.carousel-card-export[data-theme="warm"] .card-title-intro,
+.carousel-card-export[data-theme="warm"] .card-title-body,
+.carousel-card-export[data-theme="warm"] .card-title-outro,
+.carousel-card-export[data-theme="warm"] .point-text,
+.carousel-card-export[data-theme="warm"] .card-subtitle-outro {
+  color: #2D3436;
+}
+.carousel-card-export[data-theme="warm"] .card-badge {
+  background-color: #E17055;
+  color: #ffffff;
+}
+.carousel-card-export[data-theme="warm"] .card-subtitle {
+  color: #E17055;
+}
+.carousel-card-export[data-theme="warm"] .bullet {
+  background-color: #E17055;
+}
+.carousel-card-export[data-theme="warm"] .card-cta-btn {
+  border-color: #E17055;
+  color: #2D3436;
+}
+.carousel-card-export[data-theme="warm"] .card-progress-bar {
+  background-color: #E6DFD5;
+}
+.carousel-card-export[data-theme="warm"] .card-progress-fill {
+  background-color: #E17055;
+}
+
+
+/* ==========================================================================
+   에디터 스크롤바 디자인 및 반응형 브라우저 처리
+   ========================================================================== */
+
+.editor-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.editor-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.editor-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+
+.editor-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+@media (max-height: 800px) {
+  .preview-scale-wrapper {
+    transform: scale(0.38); /* 브라우저 세로 폭이 좁은 경우 더 축소 */
+  }
+}
+
+@media (max-width: 900px) {
+  .app-layout {
+    flex-direction: column;
+    overflow-y: auto;
+    height: auto;
+  }
+  .editor-panel {
+    width: 100%;
+    height: auto;
+  }
+  .preview-panel {
+    height: 600px;
+  }
+}
+
+/* 텍스트 정렬 및 배치 스타일 확장 */
+.carousel-card-export.align-left .card-body {
+  align-items: flex-start;
+  text-align: left;
+}
+.carousel-card-export.align-left .card-content-list {
+  align-items: flex-start;
+}
+
+.carousel-card-export.align-center .card-body {
+  align-items: center;
+  text-align: center;
+}
+.carousel-card-export.align-center .card-content-list {
+  align-items: center;
+}
+.carousel-card-export.align-center .slide-type-intro,
+.carousel-card-export.align-center .slide-type-body,
+.carousel-card-export.align-center .slide-type-outro {
+  align-items: center;
+}
+
+.carousel-card-export.align-right .card-body {
+  align-items: flex-end;
+  text-align: right;
+}
+.carousel-card-export.align-right .card-content-list {
+  align-items: flex-end;
+}
+.carousel-card-export.align-right .slide-type-intro,
+.carousel-card-export.align-right .slide-type-body,
+.carousel-card-export.align-right .slide-type-outro {
+  align-items: flex-end;
+}
+
+/* 색상 매트 오버레이 레이어 */
+.card-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2; /* 배경 바로 위 */
+  pointer-events: none;
+}
+
+/* 콘텐츠 글래스모피즘 박스 프레임 */
+.card-body.content-box-glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border: 3px solid rgba(255, 255, 255, 0.08);
+  border-radius: 30px;
+  padding: 60px 80px;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.35);
+  transition: all 0.3s ease;
+}
+
+/* Light 테마일 때 글래스모피즘 가독성 보조 (글씨가 흰색 계열일 수 있으므로 박스를 어둡게 대비) */
+.carousel-card-export[data-theme="light"] .card-body.content-box-glass {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.06);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}

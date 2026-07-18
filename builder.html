@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="인스타그램 캐러셀 카드뉴스를 실시간으로 제작하고 이미지로 다운로드할 수 있는 전문 웹 빌더입니다.">
+  <title>인스타그램 4:5 캐러셀 빌더</title>
+  <!-- Google Fonts & Pretendard 폰트 불러오기 (한글/영문 고품질 폰트셋) -->
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Nanum+Myeongjo:wght@400;700;800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <!-- html2canvas 라이브러리 (DOM 캡처용) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- 전용 스타일시트 연결 -->
+  <link rel="stylesheet" href="builder.css">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- 왼쪽 조작/편집 패널 -->
+    <aside class="editor-panel" aria-label="캐러셀 에디터">
+      <header class="editor-header">
+        <h1>Carousel Builder</h1>
+        <p>인스타그램 4:5 카드뉴스 제작 툴</p>
+      </header>
+
+      <div class="editor-scroll">
+        <!-- 1. 슬라이드 관리 -->
+        <section class="editor-section">
+          <h2>슬라이드 관리</h2>
+          <div class="slide-navigation">
+            <button type="button" id="prevSlideBtn" class="control-btn mini-btn">이전 장</button>
+            <span id="slideIndicator">1 / 1</span>
+            <button type="button" id="nextSlideBtn" class="control-btn mini-btn">다음 장</button>
+          </div>
+          <div class="slide-actions">
+            <button type="button" id="addSlideBtn" class="control-btn action-btn">슬라이드 추가</button>
+            <button type="button" id="deleteSlideBtn" class="control-btn delete-btn">현재 장 삭제</button>
+          </div>
+        </section>
+
+        <!-- 2. 텍스트 설정 -->
+        <section class="editor-section">
+          <h2>텍스트 설정</h2>
+          <div class="form-group">
+            <label for="inputInstagramId">인스타그램 계정명</label>
+            <input type="text" id="inputInstagramId" value="@ai_explorer" placeholder="@username">
+          </div>
+          <div class="form-group">
+            <label for="selectSlideType">슬라이드 유형</label>
+            <select id="selectSlideType">
+              <option value="intro">표지 (Intro)</option>
+              <option value="body" selected>본문 (Body)</option>
+              <option value="outro">아웃트로 (Outro/CTA)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="inputTitle">슬라이드 제목</label>
+            <textarea id="inputTitle" rows="2" placeholder="핵심 제목을 적어주세요."></textarea>
+          </div>
+          <div class="form-group" id="bodyContentGroup">
+            <label for="inputBody1">본문 문구 1</label>
+            <textarea id="inputBody1" rows="2" placeholder="첫 번째 포인트를 적어주세요."></textarea>
+            <label for="inputBody2" style="margin-top: 8px;">본문 문구 2</label>
+            <textarea id="inputBody2" rows="2" placeholder="두 번째 포인트를 적어주세요."></textarea>
+          </div>
+          <div class="form-group hidden" id="introSubGroup">
+            <label for="inputBadge">배지 텍스트 (표지 전용)</label>
+            <input type="text" id="inputBadge" placeholder="INFO CARD">
+            <label for="inputSubtitle" style="margin-top: 8px;">서브타이틀</label>
+            <input type="text" id="inputSubtitle" placeholder="간단한 부가 설명을 적어주세요.">
+          </div>
+        </section>
+
+        <!-- 3. 타이포그래피 & 배치 설정 -->
+        <section class="editor-section">
+          <h2>텍스트 스타일 & 배치</h2>
+          <div class="form-group">
+            <label for="selectFontFamily">폰트 글꼴</label>
+            <select id="selectFontFamily">
+              <option value="'Pretendard', sans-serif" selected>Pretendard (고딕)</option>
+              <option value="'Inter', sans-serif">Inter (영문 추천)</option>
+              <option value="'Nanum Myeongjo', serif">나눔명조 (명조체)</option>
+              <option value="'Playfair Display', serif">Playfair Display (세리프)</option>
+              <option value="'Roboto', sans-serif">Roboto</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="selectTextAlignment">문장 정렬</label>
+            <select id="selectTextAlignment">
+              <option value="left" selected>왼쪽 정렬</option>
+              <option value="center">중앙 정렬</option>
+              <option value="right">오른쪽 정렬</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="selectVerticalAlignment">수직 정렬 (상하 배치)</label>
+            <select id="selectVerticalAlignment">
+              <option value="flex-start">상단 배치</option>
+              <option value="center" selected>중앙 배치</option>
+              <option value="flex-end">하단 배치</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="selectContentBox">텍스트 박스 스타일</label>
+            <select id="selectContentBox">
+              <option value="none" selected>박스 없음 (기본)</option>
+              <option value="glass">글래스모피즘 박스 적용</option>
+            </select>
+          </div>
+          <div class="slider-group">
+            <label for="inputTitleSize">제목 크기</label>
+            <input type="range" id="inputTitleSize" min="30" max="100" value="48">
+          </div>
+          <div class="slider-group">
+            <label for="inputBodySize">본문 크기</label>
+            <input type="range" id="inputBodySize" min="16" max="60" value="34">
+          </div>
+          <div class="slider-group">
+            <label for="inputContentOffsetY">상하 미세 위치</label>
+            <input type="range" id="inputContentOffsetY" min="-250" max="250" value="0">
+          </div>
+        </section>
+
+        <!-- 4. 디자인 테마 -->
+          <div class="theme-grid">
+            <button type="button" class="theme-btn active" data-theme="dark">Dark</button>
+            <button type="button" class="theme-btn" data-theme="light">Light</button>
+            <button type="button" class="theme-btn" data-theme="cyberpunk">Cyberpunk</button>
+            <button type="button" class="theme-btn" data-theme="warm">Warm</button>
+          </div>
+        </section>
+
+        <!-- 4. 이미지 및 로고 업로드 -->
+        <section class="editor-section">
+          <h2>미디어 리소스</h2>
+          <div class="form-group">
+            <label>배경 이미지 등록</label>
+            <div class="file-dropzone" id="bgDropzone">
+              <p>클릭하여 배경 이미지 첨부 (PNG/JPG)</p>
+              <input type="file" id="bgFileInput" accept="image/*" class="hidden">
+            </div>
+            <!-- 배경 크기 및 위치 조정 도구 -->
+            <div class="image-adjustments hidden" id="bgAdjustments">
+              <div class="slider-group">
+                <label for="bgScale">배경 크기</label>
+                <input type="range" id="bgScale" min="100" max="250" value="100">
+              </div>
+              <div class="slider-group">
+                <label for="bgOpacity">배경 투명도</label>
+                <input type="range" id="bgOpacity" min="0" max="100" value="100">
+              </div>
+              <div class="slider-group">
+                <label for="bgPositionX">가로 위치</label>
+                <input type="range" id="bgPositionX" min="-100" max="100" value="0">
+              </div>
+              <div class="slider-group">
+                <label for="bgPositionY">세로 위치</label>
+                <input type="range" id="bgPositionY" min="-100" max="100" value="0">
+              </div>
+              <div class="slider-group" style="margin-top: 6px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 6px;">
+                <label for="inputMatteColor">색상 매트</label>
+                <input type="color" id="inputMatteColor" value="#000000" style="width:50px; height:28px; padding:0; border:none; cursor:pointer;">
+              </div>
+              <div class="slider-group">
+                <label for="inputMatteOpacity">매트 투명도</label>
+                <input type="range" id="inputMatteOpacity" min="0" max="100" value="0">
+              </div>
+              <button type="button" id="resetBgBtn" class="control-btn mini-btn">배경 리셋</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>로고 이미지 등록</label>
+            <div class="file-dropzone" id="logoDropzone">
+              <p>클릭하여 브랜드 로고 첨부 (PNG 추천)</p>
+              <input type="file" id="logoFileInput" accept="image/*" class="hidden">
+            </div>
+            <!-- 로고 크기 및 투명도 조정 도구 -->
+            <div class="image-adjustments hidden" id="logoAdjustments">
+              <div class="slider-group">
+                <label for="logoScale">로고 크기</label>
+                <input type="range" id="logoScale" min="30" max="150" value="70">
+              </div>
+              <div class="slider-group">
+                <label for="logoOpacity">로고 투명도</label>
+                <input type="range" id="logoOpacity" min="10" max="100" value="100">
+              </div>
+              <button type="button" id="resetLogoBtn" class="control-btn mini-btn">로고 제거</button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- 저장 버튼 고정 영역 -->
+      <footer class="editor-footer">
+        <button type="button" id="downloadCurrentBtn" class="control-btn download-btn">현재 장 이미지 저장 (PNG)</button>
+        <button type="button" id="downloadAllBtn" class="control-btn download-all-btn">모든 장 일괄 저장</button>
+      </footer>
+    </aside>
+
+    <!-- 오른쪽 프리뷰 영역 -->
+    <main class="preview-panel" aria-label="카드뉴스 프리뷰">
+      <div class="preview-scale-wrapper">
+        <!-- 인스타그램 4:5 규격 원본 카드 (1080x1350 고정 해상도로 html2canvas가 읽을 대상) -->
+        <article class="carousel-card-export" id="captureCard">
+          
+          <!-- 카드뉴스 내부 배경 (업로드된 이미지 로드) -->
+          <div class="card-bg" id="cardBgElement"></div>
+          
+          <!-- 색상 매트 오버레이 레이어 (신규) -->
+          <div class="card-overlay" id="cardOverlayElement"></div>
+          
+          <!-- 상단 메타 영역 -->
+          <header class="card-header">
+            <span class="card-id" id="cardInstagramId">@ai_explorer</span>
+            <span class="card-page" id="cardPageIndicator">01 / 01</span>
+          </header>
+
+          <!-- 중앙 메인 콘텐츠 영역 -->
+          <div class="card-body">
+            <!-- 1. 표지형 슬라이드 (Intro) -->
+            <div class="slide-type-intro hidden" id="cardIntroView">
+              <span class="card-badge">INFO CARD</span>
+              <h2 class="card-title-intro" id="cardIntroTitle">메인 제목을 입력하세요</h2>
+              <p class="card-subtitle" id="cardIntroSubtitle">이 카드를 넘기면 얻게 될 혜택이나 요약 기술</p>
+            </div>
+
+            <!-- 2. 본문형 슬라이드 (Body) -->
+            <div class="slide-type-body" id="cardBodyView">
+              <h2 class="card-title-body" id="cardBodyTitle">01. 핵심 개념/행동</h2>
+              <ul class="card-content-list">
+                <li id="cardBodyPoint1">
+                  <span class="bullet"></span>
+                  <span class="point-text">첫 번째 상세 내용을 에디터에 적어주세요.</span>
+                </li>
+                <li id="cardBodyPoint2">
+                  <span class="bullet"></span>
+                  <span class="point-text">두 번째 유용한 팁이나 데이터를 추가하세요.</span>
+                </li>
+              </ul>
+            </div>
+
+            <!-- 3. 결론형 슬라이드 (Outro) -->
+            <div class="slide-type-outro hidden" id="cardOutroView">
+              <h2 class="card-title-outro" id="cardOutroTitle">도움이 되셨나요?</h2>
+              <p class="card-subtitle-outro" id="cardOutroSubtitle">좋아요와 저장으로 나중에 다시 확인하세요!</p>
+              <div class="card-cta-btn">
+                <span id="cardCtaText">이 정보 저장하기</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 로고 마크 배치 레이어 (사용자가 업로드 시 동적으로 이미지 소스 추가) -->
+          <div class="card-logo-layer" id="cardLogoContainer">
+            <img src="" alt="Brand Logo" class="hidden" id="cardLogoElement">
+          </div>
+
+          <!-- 하단 네비게이션 프로그레스 바 -->
+          <footer class="card-footer">
+            <div class="card-progress-bar">
+              <div class="card-progress-fill" id="cardProgressFill" style="width: 100%;"></div>
+            </div>
+          </footer>
+
+        </article>
+      </div>
+    </main>
+  </div>
+
+  <!-- 전용 스크립트 연결 -->
+  <script src="builder.js"></script>
+</body>
+</html>
