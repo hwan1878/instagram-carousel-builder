@@ -1,3 +1,9 @@
+// 전역 에러 디버깅 모니터링
+window.addEventListener('error', function(e) {
+  console.error("에러 감지:", e);
+  alert("런타임 오류가 발생했습니다.\n에러: " + e.message + "\n라인: " + e.lineno + "\n파일: " + e.filename);
+});
+
 // --- 글로벌 상태 관리 ---
 let slides = [
   {
@@ -20,7 +26,9 @@ let slides = [
     matteOpacity: 0,
     verticalAlignment: "center",
     useContentBox: "none",
-    badgeText: "INFO CARD"
+    badgeText: "INFO CARD",
+    textColor: "#ffffff",
+    accentColor: "#00f0ff"
   }
 ];
 let currentIndex = 0;
@@ -34,6 +42,76 @@ let brandLogo = {
 
 let activeTheme = 'dark';
 let instagramId = '@ai_explorer';
+
+// 한글 폰트에서 지원하지 않는 이모지(유니코드 16비트 초과 대역 등)를 제거합니다.
+function remove_emoji(text) {
+  if (typeof text !== 'string') text = String(text || '');
+  return Array.from(text).filter(c => c.codePointAt(0) < 0x10000).join('');
+}
+
+// 텍스트 강조 처리 헬퍼 함수 (대괄호 [단어] 패턴 치환)
+function applyHighlight(text) {
+  if (typeof text !== 'string') text = String(text || '');
+  const cleanText = remove_emoji(text);
+  // HTML 이스케이프 처리
+  const escaped = cleanText.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  return escaped.replace(/\[(.*?)\]/g, '<span class="highlight-text">$1</span>');
+}
+
+// 로컬 스토리지 임시 저장
+function saveToLocalStorage() {
+  const state = {
+    slides,
+    currentIndex,
+    brandLogo,
+    activeTheme,
+    instagramId
+  };
+  localStorage.setItem('carousel_builder_state', JSON.stringify(state));
+}
+
+// 로컬 스토리지 데이터 로드
+function loadFromLocalStorage() {
+  const saved = localStorage.getItem('carousel_builder_state');
+  if (saved) {
+    try {
+      const state = JSON.parse(saved);
+      // 구버전 저장 데이터 구조 하방 호환성 안전 맵핑
+      slides = state.slides.map(slide => ({
+        type: slide.type || 'body',
+        title: slide.title || '',
+        subtitle: slide.subtitle || '',
+        body1: slide.body1 || '',
+        body2: slide.body2 || '',
+        bgImage: slide.bgImage || '',
+        bgScale: slide.bgScale || 100,
+        bgOpacity: slide.bgOpacity !== undefined ? slide.bgOpacity : 100,
+        bgX: slide.bgX || 0,
+        bgY: slide.bgY || 0,
+        matteColor: slide.matteColor || "#000000",
+        matteOpacity: slide.matteOpacity !== undefined ? slide.matteOpacity : 0,
+        fontFamily: slide.fontFamily || "'Pretendard', sans-serif",
+        textAlignment: slide.textAlignment || "left",
+        verticalAlignment: slide.verticalAlignment || "center",
+        useContentBox: slide.useContentBox || "none",
+        titleSize: slide.titleSize || 48,
+        bodySize: slide.bodySize || 34,
+        contentOffsetY: slide.contentOffsetY || 0,
+        badgeText: slide.badgeText || "INFO CARD",
+        textColor: slide.textColor || "#ffffff",
+        accentColor: slide.accentColor || "#00f0ff"
+      }));
+      currentIndex = state.currentIndex || 0;
+      brandLogo = state.brandLogo || brandLogo;
+      activeTheme = state.activeTheme || 'dark';
+      instagramId = state.instagramId || '@ai_explorer';
+      return true;
+    } catch(e) {
+      console.error("임시 저장 로드 오류:", e);
+    }
+  }
+  return false;
+}
 
 // --- DOM 요소 참조 ---
 const selectSlideType = document.getElementById('selectSlideType');
@@ -53,6 +131,9 @@ const selectTextAlignment = document.getElementById('selectTextAlignment');
 const inputTitleSize = document.getElementById('inputTitleSize');
 const inputBodySize = document.getElementById('inputBodySize');
 const inputContentOffsetY = document.getElementById('inputContentOffsetY');
+
+const inputTextColor = document.getElementById('inputTextColor'); // 기본 글자색 (신규)
+const inputAccentColor = document.getElementById('inputAccentColor'); // 강조 글자색 (신규)
 
 const slideIndicator = document.getElementById('slideIndicator');
 const prevSlideBtn = document.getElementById('prevSlideBtn');
@@ -81,6 +162,11 @@ const resetLogoBtn = document.getElementById('resetLogoBtn');
 
 const selectVerticalAlignment = document.getElementById('selectVerticalAlignment'); // 수직 정렬 (신규)
 const selectContentBox = document.getElementById('selectContentBox'); // 콘텐츠 박스 (신규)
+
+// 로컬 폰트 업로드 엘리먼트 참조 (신규)
+const fontDropzone = document.getElementById('fontDropzone');
+const fontFileInput = document.getElementById('fontFileInput');
+const clearStorageBtn = document.getElementById('clearStorageBtn');
 
 // 프리뷰 카드 요소
 const captureCard = document.getElementById('captureCard');
@@ -144,12 +230,21 @@ function handleFile(file, target) {
     const base64Data = event.target.result;
     if (target === 'bg') {
       slides[currentIndex].bgImage = base64Data;
-      bgAdjustments.classList.remove('hidden');
-      updatePreview();
+      
+      // 이미지 원본 비율 구하기
+      const img = new Image();
+      img.src = base64Data;
+      img.onload = () => {
+        slides[currentIndex].imageRatio = img.naturalWidth / img.naturalHeight;
+        if (bgAdjustments) bgAdjustments.classList.remove('hidden');
+        updatePreview();
+        saveToLocalStorage();
+      };
     } else if (target === 'logo') {
       brandLogo.image = base64Data;
-      logoAdjustments.classList.remove('hidden');
+      if (logoAdjustments) logoAdjustments.classList.remove('hidden');
       updatePreview();
+      saveToLocalStorage();
     }
   };
   reader.readAsDataURL(file);
@@ -177,45 +272,83 @@ function updatePreview() {
 
   if (currentSlide.type === 'intro') {
     cardIntroView.classList.remove('hidden');
-    cardBadge.textContent = currentSlide.badgeText || 'INFO CARD'; // 배지 문구 동기화
-    cardIntroTitle.textContent = currentSlide.title || '메인 제목을 입력하세요';
-    cardIntroSubtitle.textContent = currentSlide.subtitle || '이 카드를 넘기면 얻게 될 혜택';
+    cardBadge.innerHTML = applyHighlight(currentSlide.badgeText || 'INFO CARD'); // 배지 문구 동기화
+    cardIntroTitle.innerHTML = applyHighlight(currentSlide.title || '메인 제목을 입력하세요');
+    cardIntroSubtitle.innerHTML = applyHighlight(currentSlide.subtitle || '이 카드를 넘기면 얻게 될 혜택');
   } else if (currentSlide.type === 'body') {
     cardBodyView.classList.remove('hidden');
-    cardBodyTitle.textContent = currentSlide.title || '개념/원리를 입력하세요';
-    cardBodyPoint1.textContent = currentSlide.body1 || '첫 번째 유용한 정보';
-    cardBodyPoint2.textContent = currentSlide.body2 || '두 번째 상세 설명';
+    cardBodyTitle.innerHTML = applyHighlight(currentSlide.title || '개념/원리를 입력하세요');
+    cardBodyPoint1.innerHTML = applyHighlight(currentSlide.body1 || '첫 번째 유용한 정보');
+    cardBodyPoint2.innerHTML = applyHighlight(currentSlide.body2 || '두 번째 상세 설명');
   } else if (currentSlide.type === 'outro') {
     cardOutroView.classList.remove('hidden');
-    cardOutroTitle.textContent = currentSlide.title || '도움이 되셨나요?';
-    cardOutroSubtitle.textContent = currentSlide.subtitle || '좋아요와 저장으로 팁을 간직하세요!';
-    cardCtaText.textContent = currentSlide.body1 || '이 정보 저장하기';
+    cardOutroTitle.innerHTML = applyHighlight(currentSlide.title || '도움이 되셨나요?');
+    cardOutroSubtitle.innerHTML = applyHighlight(currentSlide.subtitle || '좋아요와 저장으로 팁을 간직하세요!');
+    cardCtaText.innerHTML = applyHighlight(currentSlide.body1 || '이 정보 저장하기');
   }
 
   // 4. 배경 이미지 렌더링 및 변형(Adjustments) 적용
   if (currentSlide.bgImage) {
     cardBgElement.style.backgroundImage = `url(${currentSlide.bgImage})`;
-    cardBgElement.style.transform = `scale(${currentSlide.bgScale / 100}) translate(${currentSlide.bgX}px, ${currentSlide.bgY}px)`;
+    
+    // 배율(scale) 및 원본 이미지의 비율 계산
+    const scale = (currentSlide.bgScale || 100) / 100;
+    const ratio = currentSlide.imageRatio || 1.0;
+    const cardRatio = 1080 / 1350; // 4:5 규격 비율 (0.8)
+    
+    let maxX = 0;
+    let maxY = 0;
+    
+    if (ratio > cardRatio) {
+      // 가로가 더 긴 이미지: 세로 높이가 100% 기준 카드 높이(1350px)에 딱 맞춰진 상태
+      const originalWidth = 1350 * ratio;
+      maxX = (originalWidth * scale - 1080) / 2;
+      maxY = (1350 * scale - 1350) / 2;
+    } else {
+      // 세로가 더 긴 이미지 (또는 정방형): 가로 폭이 카드 너비(1080px)에 맞춰진 상태
+      const originalHeight = 1080 / ratio;
+      maxX = (1080 * scale - 1080) / 2;
+      maxY = (originalHeight * scale - 1350) / 2;
+    }
+    
+    // 음수가 되지 않도록 보호 (여백 강제 노출 방지)
+    maxX = Math.max(0, maxX);
+    maxY = Math.max(0, maxY);
+    
+    // 슬라이더(-100 ~ 100) 백분율 매핑하여 픽셀 오프셋 구하기
+    const translateX = ((currentSlide.bgX || 0) / 100) * maxX;
+    const translateY = ((currentSlide.bgY || 0) / 100) * maxY;
+    
+    // scale이 적용된 상태이므로 translate 좌표를 scale만큼 나눠서 상쇄해 주어야 물리 픽셀 크롭 1:1 매칭이 일어남
+    cardBgElement.style.transform = `scale(${scale}) translate(${translateX / scale}px, ${translateY / scale}px)`;
+    cardBgElement.style.backgroundPosition = 'center';
+    
     cardBgElement.style.opacity = (currentSlide.bgOpacity !== undefined ? currentSlide.bgOpacity : 100) / 100;
-    bgAdjustments.classList.remove('hidden');
+    if (bgAdjustments) bgAdjustments.classList.remove('hidden');
     
     // 조절 바 값 세팅
-    bgScale.value = currentSlide.bgScale;
-    bgOpacity.value = currentSlide.bgOpacity !== undefined ? currentSlide.bgOpacity : 100;
-    bgPositionX.value = currentSlide.bgX;
-    bgPositionY.value = currentSlide.bgY;
+    if (bgScale) bgScale.value = currentSlide.bgScale;
+    if (bgOpacity) bgOpacity.value = currentSlide.bgOpacity !== undefined ? currentSlide.bgOpacity : 100;
+    if (bgPositionX) bgPositionX.value = currentSlide.bgX;
+    if (bgPositionY) bgPositionY.value = currentSlide.bgY;
     
     // 색상 매트 컨트롤러 연동
-    inputMatteColor.value = currentSlide.matteColor || '#000000';
-    inputMatteOpacity.value = currentSlide.matteOpacity !== undefined ? currentSlide.matteOpacity : 0;
+    if (inputMatteColor) inputMatteColor.value = currentSlide.matteColor || '#000000';
+    if (inputMatteOpacity) inputMatteOpacity.value = currentSlide.matteOpacity !== undefined ? currentSlide.matteOpacity : 0;
   } else {
     cardBgElement.style.backgroundImage = 'none';
-    bgAdjustments.classList.add('hidden');
+    if (bgAdjustments) bgAdjustments.classList.add('hidden');
   }
 
   // 색상 매트 오버레이 실시간 렌더링
   cardOverlayElement.style.backgroundColor = currentSlide.matteColor || '#000000';
   cardOverlayElement.style.opacity = (currentSlide.matteOpacity !== undefined ? currentSlide.matteOpacity : 0) / 100;
+
+  // 4-2. 사용자 정의 글자 및 강조 색상 프리뷰 카드 주입
+  if (captureCard) {
+    captureCard.style.setProperty('--card-text-color', currentSlide.textColor || '#ffffff');
+    captureCard.style.setProperty('--card-accent-color', currentSlide.accentColor || '#00f0ff');
+  }
 
   // 5. 공용 브랜드 로고 렌더링
   if (brandLogo.image) {
@@ -223,14 +356,14 @@ function updatePreview() {
     cardLogoElement.style.maxWidth = `${brandLogo.scale * 2}px`;
     cardLogoElement.style.opacity = brandLogo.opacity / 100;
     cardLogoElement.classList.remove('hidden');
-    logoAdjustments.classList.remove('hidden');
+    if (logoAdjustments) logoAdjustments.classList.remove('hidden');
     
-    logoScale.value = brandLogo.scale;
-    logoOpacity.value = brandLogo.opacity;
+    if (logoScale) logoScale.value = brandLogo.scale;
+    if (logoOpacity) logoOpacity.value = brandLogo.opacity;
   } else {
     cardLogoElement.src = '';
     cardLogoElement.classList.add('hidden');
-    logoAdjustments.classList.add('hidden');
+    if (logoAdjustments) logoAdjustments.classList.add('hidden');
   }
 
   // 6. 타이포그래피 및 문장 정렬/배치 실시간 인라인 스타일 주입 (신규 고도화)
@@ -262,11 +395,10 @@ function updatePreview() {
   // 수직 정렬 주입 (상단, 중앙, 하단 배치)
   cardBodyContainer.style.justifyContent = currentSlide.verticalAlignment || 'center';
 
-  // 콘텐츠 박스 스타일 (글래스모피즘 박스 적용 여부)
-  if (currentSlide.useContentBox === 'glass') {
-    cardBodyContainer.classList.add('content-box-glass');
-  } else {
-    cardBodyContainer.classList.remove('content-box-glass');
+  // 콘텐츠 박스 스타일 (글래스모피즘 / 불투명 카드 / 하단 띠 디자인 분기 처리)
+  cardBodyContainer.classList.remove('content-box-glass', 'content-box-card', 'content-box-stripe');
+  if (currentSlide.useContentBox !== 'none') {
+    cardBodyContainer.classList.add(`content-box-${currentSlide.useContentBox}`);
   }
 
   // 7. 인디케이터 상태 갱신
@@ -291,19 +423,21 @@ function saveCurrentInput() {
   }
 
   // 타이포그래피 & 배치 값 세이브 (신규)
-  currentSlide.fontFamily = selectFontFamily.value;
-  currentSlide.textAlignment = selectTextAlignment.value;
-  currentSlide.titleSize = parseInt(inputTitleSize.value);
-  currentSlide.bodySize = parseInt(inputBodySize.value);
-  currentSlide.contentOffsetY = parseInt(inputContentOffsetY.value);
+  if (selectFontFamily) currentSlide.fontFamily = selectFontFamily.value;
+  if (selectTextAlignment) currentSlide.textAlignment = selectTextAlignment.value;
+  if (inputTitleSize) currentSlide.titleSize = parseInt(inputTitleSize.value);
+  if (inputBodySize) currentSlide.bodySize = parseInt(inputBodySize.value);
+  if (inputContentOffsetY) currentSlide.contentOffsetY = parseInt(inputContentOffsetY.value);
 
   // 배경 이미지 고도화 및 배치 스타일 저장
-  currentSlide.verticalAlignment = selectVerticalAlignment.value;
-  currentSlide.useContentBox = selectContentBox.value;
+  if (selectVerticalAlignment) currentSlide.verticalAlignment = selectVerticalAlignment.value;
+  if (selectContentBox) currentSlide.useContentBox = selectContentBox.value;
+  if (inputTextColor) currentSlide.textColor = inputTextColor.value;
+  if (inputAccentColor) currentSlide.accentColor = inputAccentColor.value;
   if (currentSlide.bgImage) {
-    currentSlide.bgOpacity = parseInt(bgOpacity.value);
-    currentSlide.matteColor = inputMatteColor.value;
-    currentSlide.matteOpacity = parseInt(inputMatteOpacity.value);
+    if (bgOpacity) currentSlide.bgOpacity = parseInt(bgOpacity.value);
+    if (inputMatteColor) currentSlide.matteColor = inputMatteColor.value;
+    if (inputMatteOpacity) currentSlide.matteOpacity = parseInt(inputMatteOpacity.value);
   }
 }
 
@@ -316,7 +450,7 @@ function loadSlide(index) {
   selectSlideType.value = currentSlide.type;
   inputTitle.value = currentSlide.title || '';
   inputSubtitle.value = currentSlide.subtitle || '';
-  inputBadge.value = currentSlide.badgeText || ''; // 배지 텍스트 로드
+  if (inputBadge) inputBadge.value = currentSlide.badgeText || ''; // 배지 텍스트 로드
   inputBody1.value = currentSlide.body1 || '';
   inputBody2.value = currentSlide.body2 || '';
 
@@ -328,8 +462,10 @@ function loadSlide(index) {
   inputContentOffsetY.value = currentSlide.contentOffsetY || 0;
 
   // 수직 정렬 및 텍스트 박스 세팅 로드
-  selectVerticalAlignment.value = currentSlide.verticalAlignment || 'center';
-  selectContentBox.value = currentSlide.useContentBox || 'none';
+  if (selectVerticalAlignment) selectVerticalAlignment.value = currentSlide.verticalAlignment || 'center';
+  if (selectContentBox) selectContentBox.value = currentSlide.useContentBox || 'none';
+  if (inputTextColor) inputTextColor.value = currentSlide.textColor || '#ffffff';
+  if (inputAccentColor) inputAccentColor.value = currentSlide.accentColor || '#00f0ff';
 
   // 타입 필드 노출 분기 처리
   toggleTypeInputs(currentSlide.type);
@@ -376,36 +512,40 @@ function initEvents() {
   });
 
   // 타이포그래피 및 배치 조절 이벤트 바인딩 (신규)
-  selectFontFamily.addEventListener('change', () => {
-    saveCurrentInput();
-    updatePreview();
+  [selectFontFamily, selectTextAlignment].forEach(element => {
+    if (element) {
+      element.addEventListener('change', () => {
+        saveCurrentInput();
+        updatePreview();
+        saveToLocalStorage();
+      });
+    }
   });
-  selectTextAlignment.addEventListener('change', () => {
-    saveCurrentInput();
-    updatePreview();
-  });
-  inputTitleSize.addEventListener('input', () => {
-    saveCurrentInput();
-    updatePreview();
-  });
-  inputBodySize.addEventListener('input', () => {
-    saveCurrentInput();
-    updatePreview();
-  });
-  inputContentOffsetY.addEventListener('input', () => {
-    saveCurrentInput();
-    updatePreview();
+  [inputTitleSize, inputBodySize, inputContentOffsetY, inputTextColor, inputAccentColor].forEach(element => {
+    if (element) {
+      element.addEventListener('input', () => {
+        saveCurrentInput();
+        updatePreview();
+        saveToLocalStorage();
+      });
+    }
   });
 
   // 수직 정렬 & 콘텐츠 박스 이벤트 바인딩
-  selectVerticalAlignment.addEventListener('change', () => {
-    saveCurrentInput();
-    updatePreview();
-  });
-  selectContentBox.addEventListener('change', () => {
-    saveCurrentInput();
-    updatePreview();
-  });
+  if (selectVerticalAlignment) {
+    selectVerticalAlignment.addEventListener('change', () => {
+      saveCurrentInput();
+      updatePreview();
+      saveToLocalStorage();
+    });
+  }
+  if (selectContentBox) {
+    selectContentBox.addEventListener('change', () => {
+      saveCurrentInput();
+      updatePreview();
+      saveToLocalStorage();
+    });
+  }
 
   // 슬라이드 유형 셀렉터
   selectSlideType.addEventListener('change', (e) => {
@@ -468,10 +608,14 @@ function initEvents() {
       titleSize: slides[currentIndex].titleSize || 48,
       bodySize: slides[currentIndex].bodySize || 34,
       contentOffsetY: slides[currentIndex].contentOffsetY || 0,
-      badgeText: slides[currentIndex].badgeText || "INFO CARD"
+      badgeText: slides[currentIndex].badgeText || "INFO CARD",
+      textColor: slides[currentIndex].textColor || "#ffffff",
+      accentColor: slides[currentIndex].accentColor || "#00f0ff"
     });
     loadSlide(slides.length - 1);
   });
+
+// 헬퍼 함수들이 전역 상단 스코프로 정상 이동되었습니다.
 
   deleteSlideBtn.addEventListener('click', () => {
     if (slides.length <= 1) {
@@ -519,19 +663,28 @@ function initEvents() {
     updatePreview();
   });
 
-  // 로고 조절 슬라이더
-  logoScale.addEventListener('input', (e) => {
-    brandLogo.scale = parseInt(e.target.value);
-    updatePreview();
-  });
-  logoOpacity.addEventListener('input', (e) => {
-    brandLogo.opacity = parseInt(e.target.value);
-    updatePreview();
-  });
-  resetLogoBtn.addEventListener('click', () => {
-    brandLogo.image = '';
-    updatePreview();
-  });
+  // 로고 조절 슬라이더 안전 바인딩
+  if (logoScale) {
+    logoScale.addEventListener('input', (e) => {
+      brandLogo.scale = parseInt(e.target.value);
+      updatePreview();
+      saveToLocalStorage();
+    });
+  }
+  if (logoOpacity) {
+    logoOpacity.addEventListener('input', (e) => {
+      brandLogo.opacity = parseInt(e.target.value);
+      updatePreview();
+      saveToLocalStorage();
+    });
+  }
+  if (resetLogoBtn) {
+    resetLogoBtn.addEventListener('click', () => {
+      brandLogo.image = '';
+      updatePreview();
+      saveToLocalStorage();
+    });
+  }
 
   // 테마 변경 버튼 작동
   const themeButtons = document.querySelectorAll('.theme-btn');
@@ -542,8 +695,38 @@ function initEvents() {
       activeTheme = e.target.getAttribute('data-theme');
       captureCard.setAttribute('data-theme', activeTheme);
       updatePreview();
+      saveToLocalStorage();
     });
   });
+
+  // 임시 저장 데이터 클리어 버튼 연동
+  if (clearStorageBtn) {
+    clearStorageBtn.addEventListener('click', () => {
+      if (confirm("임시 저장된 카드뉴스 데이터를 모두 삭제하고 초기화하시겠습니까?")) {
+        localStorage.removeItem('carousel_builder_state');
+        location.reload();
+      }
+    });
+  }
+
+  // 로컬 폰트 업로드 연동
+  if (fontDropzone && fontFileInput) {
+    fontDropzone.addEventListener('click', () => fontFileInput.click());
+    fontFileInput.addEventListener('change', (e) => handleFontFile(e.target.files[0]));
+
+    fontDropzone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      fontDropzone.classList.add('dragover');
+    });
+    fontDropzone.addEventListener('dragleave', () => {
+      fontDropzone.classList.remove('dragover');
+    });
+    fontDropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      fontDropzone.classList.remove('dragover');
+      handleFontFile(e.dataTransfer.files[0]);
+    });
+  }
 
   // 단일 슬라이드 다운로드 캡처
   document.getElementById('downloadCurrentBtn').addEventListener('click', () => {
@@ -552,6 +735,50 @@ function initEvents() {
 
   // 일괄 다운로드
   document.getElementById('downloadAllBtn').addEventListener('click', downloadAll);
+}
+
+// --- FontFace API를 활용한 로컬 사용자 폰트 등록 로직 ---
+function handleFontFile(file) {
+  if (!file) return;
+  const ext = file.name.split('.').pop().toLowerCase();
+  if (ext !== 'ttf' && ext !== 'otf') {
+    alert("지원하지 않는 포맷입니다. TTF 또는 OTF 파일만 등록할 수 있습니다.");
+    return;
+  }
+
+  const baseName = file.name.split('.')[0];
+  // 폰트 이름 표준화 (공백 및 특수문자 제거)
+  const fontName = 'custom_' + baseName.replace(/[^a-zA-Z0-9]/g, '_');
+  
+  const reader = new FileReader();
+  fontDropzone.querySelector('p').textContent = "폰트 분석 중...";
+
+  reader.onload = function(e) {
+    const fontFace = new FontFace(fontName, e.target.result);
+    fontFace.load().then(function(loadedFace) {
+      document.fonts.add(loadedFace);
+
+      // 폰트 선택 드롭다운에 새로운 옵션 삽입
+      const option = document.createElement('option');
+      option.value = `"${fontName}", sans-serif`;
+      option.textContent = `로컬: ${baseName}`;
+      selectFontFamily.appendChild(option);
+      
+      // 선택값 변경 및 렌더링 업데이트
+      selectFontFamily.value = option.value;
+      saveCurrentInput();
+      updatePreview();
+      saveToLocalStorage();
+
+      fontDropzone.querySelector('p').textContent = `폰트 로드됨: ${baseName}`;
+      alert(`[${baseName}] 폰트가 브라우저에 임시 추가되었습니다.`);
+    }).catch(err => {
+      console.error(err);
+      fontDropzone.querySelector('p').textContent = "폰트 추가 실패";
+      alert("폰트를 로드하는 데 실패했습니다. 파일 무결성을 확인해 주세요.");
+    });
+  };
+  reader.readAsArrayBuffer(file);
 }
 
 // --- html2canvas 활용한 캡처 및 다운로드 코어 로직 ---
@@ -643,8 +870,28 @@ async function downloadAll() {
 // --- 애플리케이션 초기화 ---
 document.addEventListener('DOMContentLoaded', () => {
   initDropzones();
+  
+  // 1. 임시 저장된 상태 복구 시도
+  const restored = loadFromLocalStorage();
+  
   initEvents();
-  // 다크 테마 기본 장착
+  
+  // 2. 테마 셋업
   captureCard.setAttribute('data-theme', activeTheme);
-  loadSlide(0);
+  
+  // 테마 활성 버튼 맞춰주기
+  const themeButtons = document.querySelectorAll('.theme-btn');
+  themeButtons.forEach(btn => {
+    if (btn.getAttribute('data-theme') === activeTheme) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+
+  // 인스타 ID 세팅 동기화
+  inputInstagramId.value = instagramId;
+
+  // 3. 현재 슬라이드 로드
+  loadSlide(currentIndex);
 });

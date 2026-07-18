@@ -35,6 +35,7 @@
             <button type="button" id="addSlideBtn" class="control-btn action-btn">슬라이드 추가</button>
             <button type="button" id="deleteSlideBtn" class="control-btn delete-btn">현재 장 삭제</button>
           </div>
+          <button type="button" id="clearStorageBtn" class="control-btn delete-btn mini-btn" style="width: 100%;">임시 저장 초기화</button>
         </section>
 
         <!-- 2. 텍스트 설정 -->
@@ -83,6 +84,13 @@
               <option value="'Roboto', sans-serif">Roboto</option>
             </select>
           </div>
+          <div class="form-group" style="margin-bottom: 6px;">
+            <label>로컬 폰트 추가 (.ttf/.otf)</label>
+            <div class="file-dropzone" id="fontDropzone" style="padding: 10px; min-height: auto;">
+              <p style="font-size: 0.75rem; color: var(--text-muted);">클릭하여 폰트 파일 등록</p>
+              <input type="file" id="fontFileInput" accept=".ttf,.otf" class="hidden">
+            </div>
+          </div>
           <div class="form-group">
             <label for="selectTextAlignment">문장 정렬</label>
             <select id="selectTextAlignment">
@@ -104,7 +112,19 @@
             <select id="selectContentBox">
               <option value="none" selected>박스 없음 (기본)</option>
               <option value="glass">글래스모피즘 박스 적용</option>
+              <option value="card">Card (불투명 어두운 카드)</option>
+              <option value="stripe">Stripe (하단 가로 띠형)</option>
             </select>
+          </div>
+          <div class="form-group" style="display: flex; gap: 12px; margin-top: 8px;">
+            <div style="flex: 1;">
+              <label for="inputTextColor">기본 글자 색상</label>
+              <input type="color" id="inputTextColor" value="#ffffff" style="width: 100%; height: 36px; padding: 0; border: none; cursor: pointer; background: transparent;">
+            </div>
+            <div style="flex: 1;">
+              <label for="inputAccentColor">강조 글자 색상</label>
+              <input type="color" id="inputAccentColor" value="#00f0ff" style="width: 100%; height: 36px; padding: 0; border: none; cursor: pointer; background: transparent;">
+            </div>
           </div>
           <div class="slider-group">
             <label for="inputTitleSize">제목 크기</label>

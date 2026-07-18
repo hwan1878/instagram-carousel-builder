@@ -805,3 +805,76 @@ body {
   border-color: rgba(0, 0, 0, 0.06);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
 }
+
+/* 하이라이트 단어 강조 스타일 */
+.highlight-text {
+  color: var(--accent) !important;
+  font-weight: 800;
+}
+.carousel-card-export[data-theme="light"] .highlight-text {
+  color: #6C5CE7 !important; /* light 테마는 보라색 강조 */
+}
+.carousel-card-export[data-theme="warm"] .highlight-text {
+  color: #E17055 !important; /* warm 테마는 오렌지 강조 */
+}
+
+/* 불투명 카드 텍스트 박스 스타일 */
+.card-body.content-box-card {
+  background-color: rgba(18, 18, 24, 0.96);
+  border: 3px solid rgba(255, 255, 255, 0.06);
+  border-radius: 30px;
+  padding: 60px 80px;
+  margin: 60px 0;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+  transition: all 0.3s ease;
+}
+.carousel-card-export[data-theme="light"] .card-body.content-box-card {
+  background-color: rgba(255, 255, 255, 0.98);
+  border-color: rgba(0, 0, 0, 0.06);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+/* 하단 띠 텍스트 박스 스타일 */
+.card-body.content-box-stripe {
+  position: absolute;
+  bottom: 120px;
+  left: 0;
+  width: 100%;
+  background: linear-gradient(to top, rgba(12, 12, 20, 0.95) 0%, rgba(12, 12, 20, 0.8) 75%, rgba(12, 12, 20, 0) 100%);
+  padding: 80px 100px 80px 100px;
+  margin: 0;
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
+  transition: all 0.3s ease;
+}
+.carousel-card-export[data-theme="light"] .card-body.content-box-stripe {
+  background: linear-gradient(to top, rgba(248, 249, 250, 0.96) 0%, rgba(248, 249, 250, 0.8) 75%, rgba(248, 249, 250, 0) 100%);
+}
+
+/* 사용자 정의 글자 및 강조 색상 동적 매핑 */
+.carousel-card-export {
+  --card-text-color: #ffffff;
+  --card-accent-color: #00f0ff;
+}
+
+.carousel-card-export .card-title-intro,
+.carousel-card-export .card-subtitle,
+.carousel-card-export .card-title-body,
+.carousel-card-export .point-text,
+.carousel-card-export .card-title-outro,
+.carousel-card-export .card-subtitle-outro,
+.carousel-card-export .card-page,
+.carousel-card-export .card-id,
+.carousel-card-export #cardCtaText {
+  color: var(--card-text-color) !important;
+}
+
+.carousel-card-export .highlight-text {
+  color: var(--card-accent-color) !important;
+}
+
+.carousel-card-export .card-badge {
+  background-color: var(--card-accent-color) !important;
+  color: #000000 !important; /* 가독성을 위한 강제 검정 글씨 */
+}
