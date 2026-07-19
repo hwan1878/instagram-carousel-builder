@@ -58,16 +58,29 @@ function applyHighlight(text) {
   return escaped.replace(/\[(.*?)\]/g, '<span class="highlight-text">$1</span>');
 }
 
-// 로컬 스토리지 임시 저장
+// 로컬 스토리지 임시 저장 (용량 초과 방지를 위해 대용량 base64 이미지는 제외하고 텍스트/설정만 세이브)
 function saveToLocalStorage() {
-  const state = {
-    slides,
-    currentIndex,
-    brandLogo,
-    activeTheme,
-    instagramId
-  };
-  localStorage.setItem('carousel_builder_state', JSON.stringify(state));
+  try {
+    const sanitizedSlides = slides.map(slide => {
+      const copy = { ...slide };
+      delete copy.bgImage; // 용량 초과 방지를 위해 base64 배경 이미지 데이터 제외
+      return copy;
+    });
+    
+    const sanitizedBrandLogo = { ...brandLogo };
+    delete sanitizedBrandLogo.image; // 용량 초과 방지를 위해 base64 로고 이미지 데이터 제외
+    
+    const state = {
+      slides: sanitizedSlides,
+      currentIndex,
+      brandLogo: sanitizedBrandLogo,
+      activeTheme,
+      instagramId
+    };
+    localStorage.setItem('carousel_builder_state', JSON.stringify(state));
+  } catch(e) {
+    console.warn("로컬 스토리지 임시 저장 실패 (용량 초과 등):", e);
+  }
 }
 
 // 로컬 스토리지 데이터 로드
